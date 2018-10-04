@@ -239,7 +239,7 @@ public:
   double lsq(void);
   void validTestError(double& train, double& valid, double& rmse_test, double &mae_test, double& testSte);
   void normalizeWordWeights(void);
-  void save(char* modelPath, char* predictionPath);
+  void save(char const* modelPath, char const* predictionPath, char const* userEmbedPath, char const* itemEmbedPath);
 
   corpus* corp;
   
@@ -275,7 +275,8 @@ public:
   void wordZ(double* res);
   void topicZ(int beer, double& res);
   void updateTopics(bool sample);
-  void topWords();
+  void topWords(char const* topwordPath);
+  double collectPerplexity();
 
   // Model parameters
   double* alpha; // Offset parameter

@@ -5,7 +5,6 @@
 #include "omp.h"
 #include "lbfgs.h"
 #include "sys/time.h"
-
 #include "language.hpp"
 using namespace std;
 
@@ -380,6 +379,65 @@ double topicCorpus::lsq()
   return res;
 }
 
+// collect all the likelihood part for test data
+double topicCorpus::collectPerplexity()
+{
+  double* wZ = new double[K];
+  wordZ(wZ);
+
+  //res=log-likelihood, wordCount=count of all words
+  double res = 0;
+  int wordCount = 0;
+  int emptyNum = 0;
+  printf("[Info]Begin testing on %d documents...\n", testVotes.size());
+  for (set<vote*>::iterator it = testVotes.begin(); it != testVotes.end(); it++)
+  {
+    if((int) ((*it)->words).size() < 1)
+    {
+      emptyNum += 1;
+      continue;
+    }
+    int user = (*it)->user;
+    int beer = (*it)->item;//currently is theta_item
+
+    double tZ;
+    topicZ(beer, tZ);
+    double ltZ = log(tZ);
+
+    double cur_loglikelihood = 0;
+    // for (int k = 0; k < K; k++)
+    // {
+    //   // p(z|theta_i)
+    //   cur_loglikelihood += beerTopicCounts[beer][k] * (*kappa * gamma_beer[beer][k] - ltZ);
+    //   // p(w|z,\beta)
+    //   // double lwZ = log(wZ[k]);
+    //   // for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
+    //   // {
+    //   //   int wi = (*it)->words[wp]; // The word
+    //   //   cur_loglikelihood += wordTopicCounts[wi][k] * (backgroundWords[wi] + topicWords[wi][k] - lwZ);
+    //   // }
+    // }
+    for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
+    {
+      int wi = (*it)->words[wp]; // The word
+      double tmp = 0;
+      for (int k = 0; k < K; k++)
+      {
+        double lwZ = log(wZ[k]);
+        tmp += exp(*kappa * gamma_beer[beer][k] - ltZ + backgroundWords[wi] + topicWords[wi][k] - lwZ);
+      }
+      cur_loglikelihood += log(tmp);
+    }
+    wordCount += (int) ((*it)->words).size();
+    res += cur_loglikelihood;
+    // printf("-- %d item: log-likelihood=%f, wordCount=%d\n", (*it)->item, cur_loglikelihood, (int) ((*it)->words).size());
+  }
+  printf("[Info]Testing finished (empty: %d/%d): log-likelihood=%f, wordCount=%d, perp=%f\n", 
+    emptyNum, testVotes.size(), res, wordCount, exp(-res/wordCount));
+  delete[] wZ;
+  return exp(-res/wordCount);
+}
+
 /// Compute the average and the variance
 void averageVar(vector<double>& values, double& av, double& var)
 {
@@ -452,24 +510,6 @@ void topicCorpus::validTestError(double& train, double& valid, double& rmse_test
   rmse_test = sqrt(rmse_test);
 }
 
-/// Print out the top words for each topic
-void topicCorpus::topWords()
-{
-  printf("Top words for each topic:\n");
-  for (int k = 0; k < K; k++)
-  {
-    vector < pair<double, int> > bestWords;
-    for (int w = 0; w < nWords; w++)
-      bestWords.push_back(pair<double, int> (-topicWords[w][k], w));
-    sort(bestWords.begin(), bestWords.end());
-    for (int w = 0; w < 10; w++)
-    {
-      printf("%s (%f) ", corp->idWord[bestWords[w].second].c_str(), -bestWords[w].first);
-    }
-    printf("\n");
-  }
-}
-
 /// Subtract averages from word weights so that each word has average weight zero across all topics (the remaining weight is stored in "backgroundWords")
 void topicCorpus::normalizeWordWeights(void)
 {
@@ -485,8 +525,36 @@ void topicCorpus::normalizeWordWeights(void)
   }
 }
 
+/// Print out the top words for each topic
+void topicCorpus::topWords(char const* topwordPath)
+{
+  double* wZ = new double[K];
+  wordZ(wZ);
+  double sumZ = 0;
+  for (int k = 0; k < K; k++)
+    sumZ += wZ[k];
+
+  if(topwordPath)
+  {
+    FILE* f = fopen_(topwordPath, "w");
+    for (int k = 0; k < K; k++)
+    {
+      vector < pair<double, int> > bestWords;
+      for (int w = 0; w < nWords; w++)
+        bestWords.push_back(pair<double, int> (-topicWords[w][k], w));
+      sort(bestWords.begin(), bestWords.end());
+      fprintf(f, "Topic %d %f:", k, wZ[k]/sumZ);
+      for (int w = 0; w < 10; w++)
+        fprintf(f, "\t%s(%f)", corp->idWord[bestWords[w].second].c_str(), -bestWords[w].first);
+      fprintf(f, "\n");
+    }
+    fclose(f);
+  }
+}
+
 /// Save a model and predictions to two files
-void topicCorpus::save(char* modelPath, char* predictionPath)
+void topicCorpus::save(char const* modelPath, char const* predictionPath, 
+                       char const* userEmbedPath, char const* itemEmbedPath)
 {
   if (modelPath)
   {
@@ -522,6 +590,32 @@ void topicCorpus::save(char* modelPath, char* predictionPath)
               (*it)->value, bestValidPredictions[*it]);
     fclose(f);
   }
+
+  if(userEmbedPath)
+  {
+    FILE* f = fopen_(userEmbedPath, "w");
+    for (int u = 0; u < nUsers; u++)
+    {
+      fprintf(f, "%s", corp->rUserIds[u].c_str());
+      for (int k = 0; k < K; k++)
+        fprintf(f, "\t%f", gamma_user[u][k]);
+      fprintf(f, "\n");
+    }
+    fclose(f);
+  }
+
+  if(itemEmbedPath)
+  {
+    FILE* f = fopen_(itemEmbedPath, "w");
+    for (int b = 0; b < nBeers; b++)
+    {
+      fprintf(f, "%s", corp->rBeerIds[b].c_str());
+      for (int k = 0; k < K; k++)
+        fprintf(f, "\t%f", gamma_beer[b][k]);
+      fprintf(f, "\n");
+    }
+    fclose(f);
+  }
 }
 
 /// Train a model for "emIterations" with "gradIterations" of gradient descent at each step
@@ -553,7 +647,7 @@ void topicCorpus::train(int emIterations, int gradIterations)
 
     double train, valid, rmse_test, mae_test, testSte;
     validTestError(train, valid, rmse_test, mae_test, testSte);
-    printf("Error (rmse_train/rmse_valid/rmse_test/mae_test) = %f/%f/%f/%f (%f)\n", train, valid, rmse_test, mae_test, testSte);
+    printf("[%d training iteration]Error (rmse_train/rmse_valid/rmse_test/mae_test) = %f/%f/%f/%f (%f)\n", emi, train, valid, rmse_test, mae_test, testSte);
 
     if (valid < bestValid)
     {
@@ -564,42 +658,100 @@ void topicCorpus::train(int emIterations, int gradIterations)
   }
 }
 
+// void savePerp(double perp, char const* perpPath)
+// {
+//   if(perpPath)
+//   {
+//     FILE* f = fopen_(perpPath, "w");
+//     fprintf(f, "mean,number_of_topics,var\n");
+//     for (int k = 0; k < (int) perp.size(); k++)
+//     {
+//       fprintf(f, "%f,%d,%f\n", perp[k][0],k,perp[k][1]);
+//     }
+//     fclose(f);
+//   }
+// }
+
 int main(int argc, char** argv)
 {
   srand(0);
 
-  if (argc < 2)
-  {
-    printf("An input file is required\n");
-    exit(0);
-  }
-
   double latentReg = 0;
   double lambda = 0.1;
-  int K = 5;
-  char* modelPath = "model.out";
-  char* predictionPath = "predictions.out";
+  int iter = 50;
+
+  int crossV = 5;
+  int Kmin = 5;
+  int Kmax = 55;
+
+  string prefix = "yelp/70k/";
 
   if (argc == 7)
   {
+    prefix.assign(argv[1]);
     latentReg = atof(argv[2]);
     lambda = atof(argv[3]);
-    K = atoi(argv[4]);
-    modelPath = argv[5];
-    predictionPath = argv[6];
+    Kmin = atoi(argv[4]);
+    Kmax = atoi(argv[5]);
+    iter = atoi(argv[6]);
   }
 
-  printf("corpus = %s\n", argv[1]);
+  string corpusPath = prefix + "train.tsv";
+  printf("corpus = %s\n", corpusPath.c_str());
   printf("latentReg = %f\n", latentReg);
   printf("lambda = %f\n", lambda);
-  printf("K = %d\n", K);
+  printf("K = %d-%d\n", Kmin, Kmax);
 
-  corpus corp(argv[1], 0);
-  topicCorpus ec(&corp, K, // K
-                 latentReg, // latent topic regularizer
-                 lambda); // lambda
-  ec.train(50, 50);
-  ec.save(modelPath, predictionPath);
+  corpus corp(corpusPath, 0);
+
+  int k_num = (int) (Kmax-Kmin)/5;
+  double perp[k_num][2];
+  for (int K = Kmin; K < Kmax; K+=5)
+  {
+    printf("======== topic number: %d ========\n", K);
+    double* result = new double[crossV];
+    for(int i = 0; i < crossV; i++)
+    {
+      printf("----- fold: %d -----\n", i);
+      topicCorpus ec(&corp, K, // K
+                   latentReg, // latent topic regularizer
+                   lambda); // lambda
+      ec.train(iter, 50);
+      ec.save((prefix + "model_" + to_string(K)).c_str(), 
+               (prefix + "prediction_" + to_string(K)).c_str(), 
+               (prefix + "user_" + to_string(K)).c_str(), 
+               (prefix + "item_" + to_string(K)).c_str());
+      ec.topWords((prefix + "topwords_" + to_string(K)).c_str());
+      result[i] = ec.collectPerplexity();
+    }
+
+    double sum = 0;
+    double mean = 0;
+    double var = 0;
+    for (int i = 0; i < crossV; i++)
+      sum += result[i];
+    mean = sum / crossV;
+
+    sum = 0;
+    for (int i = 0; i < crossV; i++)
+      sum += (result[i] - mean) * (result[i] - mean);
+    var = sqrt(sum / crossV);
+
+    perp[(int) K/5-1][0] = mean;
+    perp[(int) K/5-1][1] = var;
+  }
+
+  char const* perpPath = (prefix + "perplexity_yelp_70k_HFT.csv").c_str();
+  if(perpPath)
+  {
+    FILE* f = fopen_(perpPath, "w");
+    fprintf(f, "mean,number_of_topics,var\n");
+    for (int k = 0; k < k_num; k++)
+    {
+      fprintf(f, "%f,%d,%f\n", perp[k][0],k,perp[k][1]);
+    }
+    fclose(f);
+  }
 
   return 0;
 }
