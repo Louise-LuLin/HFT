@@ -755,7 +755,7 @@ int main(int argc, char** argv)
 
     std::string fold="";
     if(crossV > 1)
-      fold = std::to_string(i) + "/"
+      fold = std::to_string(i) + "/";
     string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
     createFolder(folder.c_str());
     ec.save((folder + "HFT_model_" + std::to_string(K) + ".txt").c_str(), 
