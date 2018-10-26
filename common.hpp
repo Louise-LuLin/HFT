@@ -268,7 +268,7 @@ public:
       {
         printf(".");
         printf("uName=%s, uIdx=%d, cur_id=%d, bName=%s, bIdx=%d, mask=%d\n", 
-          uName, user_idx, cur_Id, bName, beer_idx, mask);
+          uName.c_str(), user_idx, cur_Id, bName.c_str(), beer_idx, mask);
         fflush( stdout);
       }
     }
