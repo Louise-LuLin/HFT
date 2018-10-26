@@ -751,13 +751,13 @@ int main(int argc, char** argv)
                  lambda); // lambda
     ec.train(iter, 50);
 
-    string folder = prefix + "/" + to_string(i) + "/";
+    string folder = prefix + "/" + std::to_string(i) + "/";
     createFolder(folder.c_str());
-    ec.save((folder + "HFT_" + source + "_model_" + to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + "_prediction_" + to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + + "_userEmbed_" + to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + + "_itemEmbed_" + to_string(K) + ".txt").c_str());
-    ec.topWords((prefix + "HFT_" + source + + "_topwords_" + to_string(K) + ".txt").c_str());
+    ec.save((folder + "HFT_" + source + "_model_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + "_prediction_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + + "_userEmbed_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + + "_itemEmbed_" + std::to_string(K) + ".txt").c_str());
+    ec.topWords((prefix + "HFT_" + source + + "_topwords_" + std::to_string(K) + ".txt").c_str());
     result[i] = ec.collectPerplexity();
     printf("[Stat]Perplecity=%f\n", result[i]);
   }
@@ -776,7 +776,7 @@ int main(int argc, char** argv)
 
   printf("[Stat]Perplexity: %f+/-%f\n", mean,var);
 
-  char const* perpPath = (prefix + "HFT_" + source + "_perplexity_" + to_string(K) + ".txt").c_str();
+  char const* perpPath = (prefix + "HFT_" + source + "_perplexity_" + std::to_string(K) + ".txt").c_str();
   if(perpPath)
   {
     FILE* f = fopen_(perpPath, "w");
