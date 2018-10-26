@@ -253,7 +253,7 @@ public:
       
       if(userIds.find(uName) == userIds.end()){
         printf("[err]User %s not exist\n", uName.c_str());
-        assert(userIds.find(uName) < userIds.end());
+        assert(!userIds.find(uName) == userIds.end());
       }
       else
         user_idx = userIds[uName];
@@ -261,7 +261,7 @@ public:
       std::string voteKey = std::to_string(user_idx) + "_" + std::to_string(cur_Id);
       if(rV.find(voteKey) == rV.end()){
         printf("[err]User-id pair %s not exist\n", voteKey.c_str());
-        assert(rV.find(voteKey) < rV.end());
+        assert(!rV.find(voteKey) == rV.end());
       }
       else
         CVIndex[rV[voteKey]] = mask;
