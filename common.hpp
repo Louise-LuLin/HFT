@@ -263,12 +263,13 @@ public:
         printf("[err]user not in mapByUserIds: %s\n", uName.c_str());
       }
 
+      printf("uName=%s, uIdx=%d, cur_id=%d, bName=%s, bIdx=%d, mask=%d\n", 
+          uName.c_str(), user_idx, cur_Id, bName.c_str(), beer_idx, mask);
+
       nRead++;
       if (nRead % 100000 == 0)
       {
         printf(".");
-        printf("uName=%s, uIdx=%d, cur_id=%d, bName=%s, bIdx=%d, mask=%d\n", 
-          uName.c_str(), user_idx, cur_Id, bName.c_str(), beer_idx, mask);
         fflush( stdout);
       }
     }
