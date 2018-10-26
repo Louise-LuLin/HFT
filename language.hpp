@@ -36,12 +36,16 @@ public:
       }
 
     // assign train_test by cross validation folds
+    int cvIdx = 0;
     if(crossV > 1)
     {
       int i=0;
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
-        int cvIdx = corp->CVIndex[i];
+        if(corp->CVIndex.find(i) == corp->CVIndex.end())
+          printf("[err]Vote index %d not found...\n", i);
+        else
+          cvIdx = corp->CVIndex[i];
         if (cvIdx != folderIndex)
         {
           trainVotes.push_back(*it);
@@ -75,12 +79,12 @@ public:
         nTrainingPerUser[(*it)->user] ++;
         nTrainingPerBeer[(*it)->item] ++;
 
-        // validVotes.push_back(*it);
-        // testVotes.insert(*it);
+        validVotes.push_back(*it);
+        testVotes.insert(*it);
       }
     }
 
-    printf("[Info]train votes = %d, valid votes = %d, testVotes = %n", 
+    printf("[Info]train votes = %d, valid votes = %d, testVotes = %d\n", 
       trainVotes.size(), validVotes.size(), testVotes.size());
 
     // asign train_test by ratio
