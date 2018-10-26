@@ -249,9 +249,9 @@ public:
       
       std::getline(ss,uName,',');
       std::getline(ss,token,',');
-      cur_Id = int(token)
+      cur_Id = int(token);
       std::getline(ss,token,',');
-      mask = int(token)
+      mask = int(token);
       
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
