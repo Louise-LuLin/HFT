@@ -267,6 +267,8 @@ public:
       if (nRead % 100000 == 0)
       {
         printf(".");
+        printf("uName=%s, uIdx=%d, cur_id=%d, bName=%s, bIdx=%d, mask=%d\n", 
+          uName, user_idx, cur_Id, bName, beer_idx, mask);
         fflush( stdout);
       }
     }
