@@ -658,7 +658,7 @@ void topicCorpus::train(int emIterations, int gradIterations)
 
     double train, valid, rmse_test, mae_test, testSte;
     validTestError(train, valid, rmse_test, mae_test, testSte);
-    printf("[%d training iteration]Error (rmse_train/rmse_valid/rmse_test/mae_test) = %f/%f/%f/%f (%f)\n", emi, train, valid, rmse_test, mae_test, testSte);
+    // printf("[%d training iteration]Error (rmse_train/rmse_valid/rmse_test/mae_test) = %f/%f/%f/%f (%f)\n", emi, train, valid, rmse_test, mae_test, testSte);
 
     if (valid < bestValid)
     {
