@@ -255,8 +255,16 @@ public:
       
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
-        beer_idx = beerIds[mapByUserIds[uName].at(cur_Id)];
-        CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
+        bName = mapByUserIds[uName].at(cur_Id);
+        if(beerIds.find(bName) != beerIds.end()){
+          beer_idx = beerIds[];
+          CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
+        } else {
+          printf("[err]item not in beerIds: %s\n", bName);
+        }
+        
+      } else {
+        printf("[err]user not in mapByUserIds: %s\n", uName);
       }
 
       nRead++;
@@ -267,7 +275,7 @@ public:
       }
     }
     in3.close();
-    printf("CVIndex size=%d, rV size=%d\n", (int)CVIndex.size(), (int)mapByUserIds.size());
+    printf("nRead = %d, CVIndex size=%d, rV size=%d\n", nRead, (int)CVIndex.size(), (int)mapByUserIds.size());
 
   }
 
