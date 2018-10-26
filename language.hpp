@@ -75,8 +75,8 @@ public:
         nTrainingPerUser[(*it)->user] ++;
         nTrainingPerBeer[(*it)->item] ++;
 
-        validVotes.push_back(*it);
-        testVotes.insert(*it);
+        // validVotes.push_back(*it);
+        // testVotes.insert(*it);
       }
     }
 
