@@ -245,13 +245,9 @@ public:
     nRead = 0;
     while (std::getline(in3, line))
     {
+      std::replace( line.begin(), line.end(), ',', ' ')
       std::stringstream ss(line);
-      
-      std::getline(ss,uName,',');
-      std::getline(ss,token,',');
-      cur_Id = atoi(token.c_str());
-      std::getline(ss,token,',');
-      mask = atoi(token.c_str());
+      ss >> uName >> cur_Id >> mask;
       
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
