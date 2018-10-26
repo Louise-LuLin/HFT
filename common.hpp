@@ -246,9 +246,9 @@ public:
     {
       std::stringstream ss(line);
       
-      std::getline(ss,uName,',')
-      std::getline(ss,cur_Id,',')
-      std::getline(ss,mask,',')
+      std::getline(ss,uName,',');
+      std::getline(ss,cur_Id,',');
+      std::getline(ss,mask,',');
       
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
