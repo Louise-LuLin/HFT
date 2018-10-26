@@ -704,13 +704,13 @@ int main(int argc, char** argv)
 
   double latentReg = 0;
   double lambda = 0.1;
-  int iter = 30;
+  int iter = 50;
 
   int crossV = 1;
   int K = 5;
 
-  string prefix;
-  string source;
+  string prefix="/zf18/ll5fy/lab/dataset";
+  string source="YelpNew";
 
   int i=0;
   while (i <= argc - 1) {
@@ -742,24 +742,27 @@ int main(int argc, char** argv)
     ++i;
   };
 
-  corpus corp(prefix, source, 0);
+  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, 0);
 
   double* result = new double[crossV];
   for(int i = 0; i < crossV; i++)
   {
     printf("----- fold: %d -----\n", i);
-    topicCorpus ec(&corp, i, K, // K
+    topicCorpus ec(&corp, i, crossV, K, // K
                  latentReg, // latent topic regularizer
                  lambda); // lambda
     ec.train(iter, 50);
 
-    string folder = prefix + "/" + std::to_string(i) + "/";
+    std::string fold="";
+    if(crossV > 1)
+      fold = std::to_string(i) + "/"
+    string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
     createFolder(folder.c_str());
-    ec.save((folder + "HFT_" + source + "_model_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + "_prediction_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + + "_userEmbed_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_" + source + + "_itemEmbed_" + std::to_string(K) + ".txt").c_str());
-    ec.topWords((prefix + "HFT_" + source + + "_topwords_" + std::to_string(K) + ".txt").c_str());
+    ec.save((folder + "HFT_model_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_prediction_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_userEmbed_" + std::to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_itemEmbed_" + std::to_string(K) + ".txt").c_str());
+    ec.topWords((prefix + "HFT_topwords_" + std::to_string(K) + ".txt").c_str());
     result[i] = ec.collectPerplexity();
     printf("[Stat]Perplecity=%f\n", result[i]);
   }

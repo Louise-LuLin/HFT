@@ -5,10 +5,11 @@ class topicCorpus
 public:
   topicCorpus(corpus* corp, // The corpus
               int i, // index of folder
+              int crossV, //mode to indicate whether CV
               int K, // The number of latent factors
               double latentReg, // Parameter regularizer used by the "standard" recommender system
               double lambda) : // Word regularizer used by HFT
-    corp(corp), folderIndex(i), K(K), latentReg(latentReg), lambda(lambda)
+    corp(corp), folderIndex(i), crossV(crossV), K(K), latentReg(latentReg), lambda(lambda)
   {
     srand(0);
 
@@ -35,10 +36,32 @@ public:
       }
 
     // assign train_test by cross validation folds
-    for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
+    if(crossV > 1)
     {
-      int cvIdx = corp->CVIndex[std::to_string((*it)->user) + "_" + std::to_string((*it)->item)];
-      if (cvIdx == folderIndex)
+      for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
+      {
+        int cvIdx = corp->CVIndex[std::to_string((*it)->user) + "_" + std::to_string((*it)->item)];
+        if (cvIdx == folderIndex)
+        {
+          trainVotes.push_back(*it);
+          trainVotesPerUser[(*it)->user].push_back(*it);
+          trainVotesPerBeer[(*it)->item].push_back(*it);
+          if (nTrainingPerUser.find((*it)->user) == nTrainingPerUser.end())
+            nTrainingPerUser[(*it)->user] = 0;
+          if (nTrainingPerBeer.find((*it)->item) == nTrainingPerBeer.end())
+            nTrainingPerBeer[(*it)->item] = 0;
+          nTrainingPerUser[(*it)->user] ++;
+          nTrainingPerBeer[(*it)->item] ++;
+        } else {
+          validVotes.push_back(*it);
+          testVotes.insert(*it);
+        }
+      }
+    }
+
+    if(crossV == 1)
+    {
+      for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
         trainVotes.push_back(*it);
         trainVotesPerUser[(*it)->user].push_back(*it);
@@ -49,9 +72,6 @@ public:
           nTrainingPerBeer[(*it)->item] = 0;
         nTrainingPerUser[(*it)->user] ++;
         nTrainingPerBeer[(*it)->item] ++;
-      } else {
-        validVotes.push_back(*it);
-        testVotes.insert(*it);
       }
     }
 
@@ -327,6 +347,7 @@ public:
   int NW;
   int K;
   int folderIndex;
+  int crossV;
 
   double latentReg;
   double lambda;
