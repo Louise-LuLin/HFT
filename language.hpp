@@ -38,9 +38,10 @@ public:
     // assign train_test by cross validation folds
     if(crossV > 1)
     {
+      int i=0;
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
-        int cvIdx = corp->CVIndex[std::to_string((*it)->user) + "_" + std::to_string((*it)->item)];
+        int cvIdx = corp->CVIndex[i];
         if (cvIdx != folderIndex)
         {
           trainVotes.push_back(*it);
@@ -56,6 +57,7 @@ public:
           validVotes.push_back(*it);
           testVotes.insert(*it);
         }
+        i++;
       }
     }
 

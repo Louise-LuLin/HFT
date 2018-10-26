@@ -16,6 +16,8 @@
 #include "algorithm"
 #include "lbfgs.h"
 #include "sstream"
+#include <assert.h>
+
 //#include "gzstream.h"
 
 /// Safely open a file
@@ -132,7 +134,7 @@ public:
     std::map<std::string, int> beerIds;
     std::map<std::string, int> rV;
     std::map<std::string, std::vector<std::string>> mapByUserIds;
-    std::map<std::string, int> CVIndex;
+    std::map<int, int> CVIndex;
 
     nUsers = 0;
     nBeers = 0;
@@ -210,7 +212,7 @@ public:
 
       // add by Lu
       mapByUserIds[uName].push_back(bName);
-      rV[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = V->size();
+      rV[std::to_string(user_idx) + "_" + std::to_string(mapByUserIds[uName].size()-1)] = V->size();
 
       v->value = value;
       v->voteTime = voteTime;
@@ -249,23 +251,21 @@ public:
       std::stringstream ss(line);
       ss >> uName >> cur_Id >> mask;
       
-      user_idx = userIds[uName];
-      if (mapByUserIds.find(uName) != mapByUserIds.end()){
-        bName = mapByUserIds[uName].at(cur_Id);
-        if(beerIds.find(bName) != beerIds.end()){
-          beer_idx = beerIds[bName];
-          CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
-        } else {
-          printf("[err]item not in beerIds: %s\n", bName.c_str());
-        }
-        
-      } else {
-        printf("[err]user not in mapByUserIds: %s\n", uName.c_str());
+      if(userIds.find(uName) == userIds.end()){
+        printf("[err]User %s not exist\n", uName.c_str());
+        assert(userIds.find(uName) < userIds.end());
       }
+      else
+        user_idx = userIds[uName];
 
-      printf("uName=%s, uIdx=%d, cur_id=%d, bName=%s, bIdx=%d, mask=%d\n", 
-          uName.c_str(), user_idx, cur_Id, bName.c_str(), beer_idx, mask);
-
+      std::string voteKey = std::to_string(user_idx) + "_" + std::to_string(cur_Id);
+      if(rV.find(voteKey) == rV.end()){
+        printf("[err]User-id pair %s not exist\n", voteKey.c_str());
+        assert(rV.find(voteKey) < rV.end());
+      }
+      else
+        CVIndex[rV[voteKey]] = mask;
+      
       nRead++;
       if (nRead % 100000 == 0)
       {
@@ -286,7 +286,7 @@ public:
   }
 
   std::vector<vote*>* V;
-  std::map<std::string, int> rV; // map user_item index pair to a vote (uIdx_iIdx -> VIdx)
+  std::map<std::string, int> rV;
 
   int nUsers; // Number of users
   int nBeers; // Number of items
@@ -296,7 +296,7 @@ public:
   std::map<std::string, int> beerIds; // Maps an item's string-valued ID to an integer
 
   std::map<std::string, std::vector<std::string>> mapByUserIds; // map a user's string ID to a list of item's string ID (userID->{itemID})
-  std::map<std::string, int> CVIndex; // map user_item index pair to a CV index (uIdx_iIdx -> CVIndex)
+  std::map<int, int> CVIndex; // map vote index to a CV index (uIdx_iIdx -> CVIndex)
 
   std::map<int, std::string> rUserIds; // Inverse of the above map
   std::map<int, std::string> rBeerIds;
