@@ -46,7 +46,7 @@ public:
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
         int cvIdx = corp->CVIndex[std::to_string((*it)->user) + "_" + std::to_string((*it)->item)];
-        if (cvIdx == folderIndex)
+        if (cvIdx != folderIndex)
         {
           trainVotes.push_back(*it);
           trainVotesPerUser[(*it)->user].push_back(*it);
@@ -77,8 +77,14 @@ public:
           nTrainingPerBeer[(*it)->item] = 0;
         nTrainingPerUser[(*it)->user] ++;
         nTrainingPerBeer[(*it)->item] ++;
+
+        validVotes.push_back(*it);
+        testVotes.insert(*it);
       }
     }
+
+    printf("[Info]train votes = %d, valid votes = %d, testVotes = %n", 
+      trainVotes.size(), validVotes.size(), testVotes.size());
 
     // asign train_test by ratio
     // double trainFraction = 0.8;

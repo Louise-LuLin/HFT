@@ -762,7 +762,7 @@ int main(int argc, char** argv)
              (folder + "HFT_prediction_" + std::to_string(K) + ".txt").c_str(), 
              (folder + "HFT_userEmbed_" + std::to_string(K) + ".txt").c_str(), 
              (folder + "HFT_itemEmbed_" + std::to_string(K) + ".txt").c_str());
-    ec.topWords((prefix + "HFT_topwords_" + std::to_string(K) + ".txt").c_str());
+    ec.topWords((folder + "HFT_topwords_" + std::to_string(K) + ".txt").c_str());
     result[i] = ec.collectPerplexity();
     printf("[Stat]Perplecity=%f\n", result[i]);
   }
