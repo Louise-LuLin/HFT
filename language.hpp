@@ -4,10 +4,11 @@ class topicCorpus
 {
 public:
   topicCorpus(corpus* corp, // The corpus
+              int i, // index of folder
               int K, // The number of latent factors
               double latentReg, // Parameter regularizer used by the "standard" recommender system
               double lambda) : // Word regularizer used by HFT
-    corp(corp), K(K), latentReg(latentReg), lambda(lambda)
+    corp(corp), folderIndex(i), K(K), latentReg(latentReg), lambda(lambda)
   {
     srand(0);
 
@@ -33,14 +34,11 @@ public:
         votesPerBeer[vi->item].push_back(vi);
       }
 
-    double trainFraction = 0.8;
-    double testFraction = 0.1;
-    double train_index = 0;
-    for (std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it ++)
+    // assign train_test by cross validation folds
+    for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
     {
-      train_index++;
-      double r = train_index / corp->V->size();
-      if (r < trainFraction)
+      int cvIdx = corp->CVIndex[std::to_string((*it)->user) + "_" + std::to_string((*it)->item)];
+      if (cvIdx == folderIndex)
       {
         trainVotes.push_back(*it);
         trainVotesPerUser[(*it)->user].push_back(*it);
@@ -51,16 +49,41 @@ public:
           nTrainingPerBeer[(*it)->item] = 0;
         nTrainingPerUser[(*it)->user] ++;
         nTrainingPerBeer[(*it)->item] ++;
-      }
-      else if (r < (testFraction + trainFraction))
-      {
+      } else {
         validVotes.push_back(*it);
-      }
-      else
-      {
         testVotes.insert(*it);
       }
     }
+
+    // asign train_test by ratio
+    // double trainFraction = 0.8;
+    // double testFraction = 0.1;
+    // double train_index = 0;
+    // for (std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it ++)
+    // {
+    //   train_index++;
+    //   double r = train_index / corp->V->size();
+    //   if (r < trainFraction)
+    //   {
+    //     trainVotes.push_back(*it);
+    //     trainVotesPerUser[(*it)->user].push_back(*it);
+    //     trainVotesPerBeer[(*it)->item].push_back(*it);
+    //     if (nTrainingPerUser.find((*it)->user) == nTrainingPerUser.end())
+    //       nTrainingPerUser[(*it)->user] = 0;
+    //     if (nTrainingPerBeer.find((*it)->item) == nTrainingPerBeer.end())
+    //       nTrainingPerBeer[(*it)->item] = 0;
+    //     nTrainingPerUser[(*it)->user] ++;
+    //     nTrainingPerBeer[(*it)->item] ++;
+    //   }
+    //   else if (r < (testFraction + trainFraction))
+    //   {
+    //     validVotes.push_back(*it);
+    //   }
+    //   else
+    //   {
+    //     testVotes.insert(*it);
+    //   }
+    // }
 
     std::vector<vote*> remove;
     for (std::set<vote*>::iterator it = testVotes.begin(); it != testVotes.end(); it ++)
@@ -277,6 +300,7 @@ public:
   void updateTopics(bool sample);
   void topWords(char const* topwordPath);
   double collectPerplexity();
+  void createFolder(const char * path);
 
   // Model parameters
   double* alpha; // Offset parameter
@@ -302,6 +326,7 @@ public:
 
   int NW;
   int K;
+  int folderIndex;
 
   double latentReg;
   double lambda;

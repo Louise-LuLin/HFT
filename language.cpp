@@ -6,6 +6,11 @@
 #include "lbfgs.h"
 #include "sys/time.h"
 #include "language.hpp"
+#include <assert.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using namespace std;
 
 inline double square(double x)
@@ -594,6 +599,8 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
   if(userEmbedPath)
   {
     FILE* f = fopen_(userEmbedPath, "w");
+
+    fprintf(f, "%d\t%d\n", nUsers, K);
     for (int u = 0; u < nUsers; u++)
     {
       fprintf(f, "%s", corp->rUserIds[u].c_str());
@@ -607,6 +614,8 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
   if(itemEmbedPath)
   {
     FILE* f = fopen_(itemEmbedPath, "w");
+
+    fprintf(f, "%d\t%d\n", nBeers, K);
     for (int b = 0; b < nBeers; b++)
     {
       fprintf(f, "%s", corp->rBeerIds[b].c_str());
@@ -658,6 +667,21 @@ void topicCorpus::train(int emIterations, int gradIterations)
   }
 }
 
+void createFolder(const char * path)
+{   
+    if (access(path, 0) == -1){
+      cout<<path<<" is not existing"<<endl;
+      cout<<"now make it"<<endl;
+      int flag=mkdir(path, 0777);
+      if (flag == 0)
+      {
+        cout<<"make successfully"<<endl;
+      } else {
+        cout<<"make errorly"<<endl;
+      }
+    }
+}
+
 // void savePerp(double perp, char const* perpPath)
 // {
 //   if(perpPath)
@@ -678,78 +702,85 @@ int main(int argc, char** argv)
 
   double latentReg = 0;
   double lambda = 0.1;
-  int iter = 50;
+  int iter = 30;
 
-  int crossV = 5;
-  int Kmin = 5;
-  int Kmax = 55;
+  int crossV = 1;
+  int K = 5;
 
-  string prefix = "yelp/70k/";
+  string prefix;
+  string source;
 
-  if (argc == 7)
+  int i=0;
+  while (i <= argc - 1) {
+    if (strcmp(argv[i], "-dir") == 0) {
+      prefix = string(argv[++i]);
+      fprintf(stdout, "+ dir = %s\n", prefix.c_str());
+    } else if (strcmp(argv[i], "-source") == 0) {
+      source = string(argv[++i]);
+      fprintf(stdout, "+ source = %s\n", source.c_str());
+    } else if (strcmp(argv[i], "-reg") == 0) {
+      latentReg = atof(argv[++i]);
+      fprintf(stdout, "+ latentReg = %f\n", latentReg);
+    } else if (strcmp(argv[i], "-lambda") == 0){
+      lambda = atof(argv[++i]);
+      fprintf(stdout, "+ lambda = %f\n", lambda);
+    } else if (strcmp(argv[i], "-iter") == 0){
+      iter = atoi(argv[++i]);
+      fprintf(stdout, "+ iter = %d\n", iter);
+    } else if (strcmp(argv[i], "-crossV") == 0) {
+      crossV = atoi(argv[++i]);
+      fprintf(stdout, "+ crossV = %d\n", crossV);
+    } else if (strcmp(argv[i], "-K") == 0) {
+      K = atoi(argv[++i]);
+      fprintf(stdout, "+ K = %d\n", K);
+    } else if (i > 0) {
+      fprintf(stdout,  "error: unknown option %s\n", argv[i]);
+      assert(0);
+    } 
+    ++i;
+  };
+
+  corpus corp(prefix, source, 0);
+
+  double* result = new double[crossV];
+  for(int i = 0; i < crossV; i++)
   {
-    prefix.assign(argv[1]);
-    latentReg = atof(argv[2]);
-    lambda = atof(argv[3]);
-    Kmin = atoi(argv[4]);
-    Kmax = atoi(argv[5]);
-    iter = atoi(argv[6]);
+    printf("----- fold: %d -----\n", i);
+    topicCorpus ec(&corp, i, K, // K
+                 latentReg, // latent topic regularizer
+                 lambda); // lambda
+    ec.train(iter, 50);
+
+    string folder = prefix + "/" + to_string(i) + "/";
+    createFolder(folder.c_str());
+    ec.save((folder + "HFT_" + source + "_model_" + to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + "_prediction_" + to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + + "_userEmbed_" + to_string(K) + ".txt").c_str(), 
+             (folder + "HFT_" + source + + "_itemEmbed_" + to_string(K) + ".txt").c_str());
+    ec.topWords((prefix + "HFT_" + source + + "_topwords_" + to_string(K) + ".txt").c_str());
+    result[i] = ec.collectPerplexity();
+    printf("[Stat]Perplecity=%f\n", result[i]);
   }
 
-  string corpusPath = prefix + "train.tsv";
-  printf("corpus = %s\n", corpusPath.c_str());
-  printf("latentReg = %f\n", latentReg);
-  printf("lambda = %f\n", lambda);
-  printf("K = %d-%d\n", Kmin, Kmax);
+  double sum = 0;
+  double mean = 0;
+  double var = 0;
+  for (int i = 0; i < crossV; i++)
+    sum += result[i];
+  mean = sum / crossV;
 
-  corpus corp(corpusPath, 0);
+  sum = 0;
+  for (int i = 0; i < crossV; i++)
+    sum += (result[i] - mean) * (result[i] - mean);
+  var = sqrt(sum / crossV);
 
-  int k_num = (int) (Kmax-Kmin)/5;
-  double perp[k_num][2];
-  for (int K = Kmin; K < Kmax; K+=5)
-  {
-    printf("======== topic number: %d ========\n", K);
-    double* result = new double[crossV];
-    for(int i = 0; i < crossV; i++)
-    {
-      printf("----- fold: %d -----\n", i);
-      topicCorpus ec(&corp, K, // K
-                   latentReg, // latent topic regularizer
-                   lambda); // lambda
-      ec.train(iter, 50);
-      ec.save((prefix + "model_" + to_string(K)).c_str(), 
-               (prefix + "prediction_" + to_string(K)).c_str(), 
-               (prefix + "user_" + to_string(K)).c_str(), 
-               (prefix + "item_" + to_string(K)).c_str());
-      ec.topWords((prefix + "topwords_" + to_string(K)).c_str());
-      result[i] = ec.collectPerplexity();
-    }
+  printf("[Stat]Perplexity: %f+/-%f\n", mean,var);
 
-    double sum = 0;
-    double mean = 0;
-    double var = 0;
-    for (int i = 0; i < crossV; i++)
-      sum += result[i];
-    mean = sum / crossV;
-
-    sum = 0;
-    for (int i = 0; i < crossV; i++)
-      sum += (result[i] - mean) * (result[i] - mean);
-    var = sqrt(sum / crossV);
-
-    perp[(int) K/5-1][0] = mean;
-    perp[(int) K/5-1][1] = var;
-  }
-
-  char const* perpPath = (prefix + "perplexity_yelp_70k_HFT.csv").c_str();
+  char const* perpPath = (prefix + "HFT_" + source + "_perplexity_" + to_string(K) + ".txt").c_str();
   if(perpPath)
   {
     FILE* f = fopen_(perpPath, "w");
-    fprintf(f, "mean,number_of_topics,var\n");
-    for (int k = 0; k < k_num; k++)
-    {
-      fprintf(f, "%f,%d,%f\n", perp[k][0],k,perp[k][1]);
-    }
+    fprintf(f, "%f+/-%f\n", mean,var);
     fclose(f);
   }
 

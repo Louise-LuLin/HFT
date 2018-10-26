@@ -64,8 +64,11 @@ template<typename T> int sgn(T val)
 class corpus
 {
 public:
-  corpus(std::string voteFile, int max)
+  corpus(std::string prefix, std::string source, int max)
   {
+    std::string voteFile = prefix + "/data.tsv";
+    std::string CVIdxFile = prefix + "/" + source + "CVIndex.txt";
+
     std::map<std::string, int> uCounts;
     std::map<std::string, int> bCounts;
 
@@ -78,11 +81,13 @@ public:
 
     std::fstream in;
     //igzstream in;
-    in.open(voteFile.c_str());
+
     std::string line;
     std::string sWord;
     
-    // Read the input file. The first time the file is read it is only to compute word counts, in order to select the top "maxWords" words to include in the dictionary
+    // Read the input file. 
+    // The first time the file is read it is only to compute word counts, in order to select the top "maxWords" words to include in the dictionary
+    in.open(voteFile.c_str());
     while (std::getline(in, line))
     {
       std::stringstream ss(line);
@@ -125,6 +130,9 @@ public:
     vote* v = new vote();
     std::map<std::string, int> userIds;
     std::map<std::string, int> beerIds;
+    std::map<std::string, int> rV;
+    std::map<std::string, std::vector<std::string>> mapByUserIds;
+    std::map<std::string, int> CVIndex;
 
     nUsers = 0;
     nBeers = 0;
@@ -176,6 +184,8 @@ public:
           v->words.push_back(wordId[sWord]);
       }
 
+      int user_idx=0;
+      int beer_idx=0;
       if (uCounts[uName] >= userMin)
       {
         if (userIds.find(uName) == userIds.end())
@@ -183,10 +193,9 @@ public:
           rUserIds[nUsers] = uName;
           userIds[uName] = nUsers++;
         }
-        v->user = userIds[uName];
+        user_idx = userIds[uName];
       }
-      else
-        v->user = 0;
+      v->user = user_idx;
 
       if (bCounts[bName] >= beerMin)
       {
@@ -195,10 +204,13 @@ public:
           rBeerIds[nBeers] = bName;
           beerIds[bName] = nBeers++;
         }
-        v->item = beerIds[bName];
+        beer_idx = beerIds[bName];
       }
-      else
-        v->item = 0;
+      v->item = beer_idx;
+
+      // add by Lu
+      mapByUserIds[uName].push_back(bName);
+      rV[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = V->size();
 
       v->value = value;
       v->voteTime = voteTime;
@@ -221,6 +233,28 @@ public:
     delete v;
 
     in2.close();
+
+    //read CVIndex file
+    int cur_Id = 0;
+    int user_idx = 0;
+    int beer_idx = 0;
+    int mask = 0;
+    std::fstream in3;
+    in3.open(CVIdxFile.c_str());
+    while (std::getline(in3, line))
+    {
+      std::stringstream ss(line);
+      ss >> uName >> cur_Id >> mask;
+
+      user_idx = userIds[uName];
+      if (mapByUserIds.find(uName) != mapByUserIds.end()){
+        beer_idx = beerIds[mapByUserIds[uName].at(cur_Id)];
+        CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
+      }
+    }
+    in3.close();
+    printf("CVIndex size=%d, rV size=%d\n", (int)CVIndex.size(), (int)mapByUserIds.size());
+
   }
 
   ~corpus()
@@ -231,6 +265,7 @@ public:
   }
 
   std::vector<vote*>* V;
+  std::map<std::string, int> rV; // map user_item index pair to a vote (uIdx_iIdx -> VIdx)
 
   int nUsers; // Number of users
   int nBeers; // Number of items
@@ -238,6 +273,9 @@ public:
 
   std::map<std::string, int> userIds; // Maps a user's string-valued ID to an integer
   std::map<std::string, int> beerIds; // Maps an item's string-valued ID to an integer
+
+  std::map<std::string, std::vector<std::string>> mapByUserIds; // map a user's string ID to a list of item's string ID (userID->{itemID})
+  std::map<std::string, int> CVIndex; // map user_item index pair to a CV index (uIdx_iIdx -> CVIndex)
 
   std::map<int, std::string> rUserIds; // Inverse of the above map
   std::map<int, std::string> rBeerIds;
