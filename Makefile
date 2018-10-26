@@ -1,4 +1,4 @@
-CC = g++
+CC = g++-8
 CFLAGS = -Wall -O3 -fopenmp -Iliblbfgs-1.10/include -Igzstream
 LDFLAGS = -llbfgs -lgomp -lgzstream -lz -lstdc++ -Lliblbfgs-1.10/lib/.libs -Lgzstream
 
