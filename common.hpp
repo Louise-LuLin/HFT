@@ -245,7 +245,7 @@ public:
     nRead = 0;
     while (std::getline(in3, line))
     {
-      std::replace( line.begin(), line.end(), ',', ' ')
+      std::replace( line.begin(), line.end(), ',', ' ');
       std::stringstream ss(line);
       ss >> uName >> cur_Id >> mask;
       
