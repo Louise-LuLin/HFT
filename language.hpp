@@ -36,11 +36,6 @@ public:
       }
 
     // assign train_test by cross validation folds
-    trainVotes.clear();
-    validVotes.clear();
-    testVotes.clear();
-    nTrainingPerUser.clear();
-    nTrainingPerBeer.clear();
     if(crossV > 1)
     {
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)

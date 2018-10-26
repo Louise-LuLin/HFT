@@ -241,15 +241,26 @@ public:
     int mask = 0;
     std::fstream in3;
     in3.open(CVIdxFile.c_str());
+    nRead = 0;
     while (std::getline(in3, line))
     {
       std::stringstream ss(line);
-      ss >> uName >> cur_Id >> mask;
-
+      
+      std::getline(ss,uName,',')
+      std::getline(ss,cur_Id,',')
+      std::getline(ss,mask,',')
+      
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
         beer_idx = beerIds[mapByUserIds[uName].at(cur_Id)];
         CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
+      }
+
+      nRead++;
+      if (nRead % 100000 == 0)
+      {
+        printf(".");
+        fflush( stdout);
       }
     }
     in3.close();
