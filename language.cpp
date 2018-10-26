@@ -646,7 +646,7 @@ void topicCorpus::train(int emIterations, int gradIterations)
     param.epsilon = 1e-2;
     param.delta = 1e-2;
     lbfgs(NW, x, &fx, evaluate, progress, (void*) this, &param);
-    printf("\nenergy after gradient step = %f\n", fx);
+    printf("\nIter %d: energy after gradient step = %f\n", emi, fx);
     lbfgs_free(x);
 
     if (lambda > 0)
