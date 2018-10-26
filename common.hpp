@@ -239,6 +239,7 @@ public:
     int user_idx = 0;
     int beer_idx = 0;
     int mask = 0;
+    std::string token;
     std::fstream in3;
     in3.open(CVIdxFile.c_str());
     nRead = 0;
@@ -247,8 +248,10 @@ public:
       std::stringstream ss(line);
       
       std::getline(ss,uName,',');
-      std::getline(ss,cur_Id,',');
-      std::getline(ss,mask,',');
+      std::getline(ss,token,',');
+      cur_Id = int(token)
+      std::getline(ss,token,',');
+      mask = int(token)
       
       user_idx = userIds[uName];
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
