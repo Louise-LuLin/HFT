@@ -257,14 +257,14 @@ public:
       if (mapByUserIds.find(uName) != mapByUserIds.end()){
         bName = mapByUserIds[uName].at(cur_Id);
         if(beerIds.find(bName) != beerIds.end()){
-          beer_idx = beerIds[];
+          beer_idx = beerIds[bName];
           CVIndex[std::to_string(user_idx) + "_" + std::to_string(beer_idx)] = mask;
         } else {
-          printf("[err]item not in beerIds: %s\n", bName);
+          printf("[err]item not in beerIds: %s\n", bName.c_str());
         }
         
       } else {
-        printf("[err]user not in mapByUserIds: %s\n", uName);
+        printf("[err]user not in mapByUserIds: %s\n", uName.c_str());
       }
 
       nRead++;
