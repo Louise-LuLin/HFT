@@ -230,8 +230,7 @@ public:
       if (max > 0 and (int) nRead >= max)
         break;
     }
-
-    printf("\n");
+    printf("\n[info]rV = %d\n", (int)rV.size());
     delete v;
 
     in2.close();
@@ -260,7 +259,7 @@ public:
 
       std::string voteKey = std::to_string(user_idx) + "_" + std::to_string(cur_Id);
       if(rV.find(voteKey) == rV.end()){
-        printf("[err]User-id pair %s not exist\n", voteKey.c_str());
+        printf("[err]User-id pair %s(%s, %d) not exist\n", voteKey.c_str(), uName.c_str(), cur_Id);
         assert(rV.find(voteKey) != rV.end());
       }
       else
