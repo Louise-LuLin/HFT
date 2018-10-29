@@ -273,7 +273,7 @@ public:
       }
     }
     in3.close();
-    printf("nRead = %d, CVIndex size=%d, rV size=%d\n", nRead, (int)CVIndex.size(), (int)mapByUserIds.size());
+    printf("nRead = %d, CVIndex size=%d, mapByUser size=%d\n", nRead, (int)CVIndex.size(), (int)mapByUserIds.size());
 
   }
 
