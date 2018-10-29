@@ -41,7 +41,7 @@ public:
     {
       int i=0;
       for(int k=0; k < 10; k++){
-        printf("[debug]CVIndex key=%d, value=%d\n", k, CVIndex[k]);
+        printf("[debug]CVIndex key=%d, value=%d\n", k, corp->CVIndex[k]);
       }
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
