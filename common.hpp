@@ -130,11 +130,11 @@ public:
 
     V = new std::vector<vote*>();
     vote* v = new vote();
-    std::map<std::string, int> userIds;
-    std::map<std::string, int> beerIds;
-    std::map<std::string, int> rV;
-    std::map<std::string, std::vector<std::string>> mapByUserIds;
-    std::map<int, int> CVIndex;
+    // std::map<std::string, int> userIds;
+    // std::map<std::string, int> beerIds;
+    // std::map<std::string, int> rV;
+    // std::map<std::string, std::vector<std::string>> mapByUserIds;
+    // std::map<int, int> CVIndex;
 
     nUsers = 0;
     nBeers = 0;
@@ -274,7 +274,9 @@ public:
     }
     in3.close();
     printf("nRead = %d, CVIndex size=%d, mapByUser size=%d\n", nRead, (int)CVIndex.size(), (int)mapByUserIds.size());
-
+    for(int k=0; k < 10; k++){
+      printf("[debug]CVIndex key=%d, value=%d\n", k, CVIndex[k]);
+    }
   }
 
   ~corpus()
