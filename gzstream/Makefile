@@ -33,11 +33,11 @@
 # ----------------------------------------------------------------------------
 
 # CXX      = CC -n32 -LANG:std   # for SGI Irix 6.5, MIPSpro CC version 7.30
-CXX      = g++   # for Linux RedHat 6.1, g++ version 2.95.2
+CXX      = g++-8   # for Linux RedHat 6.1, g++ version 2.95.2
 
 CPPFLAGS = -I. -O
 LDFLAGS  = -L. -lgzstream -lz
-AR       = ar cr
+AR       = libtool -static -o #ar cr
 
 # ----------------------------------------------------------------------------
 # plain simple rules to make and cleanup the library:
