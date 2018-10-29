@@ -274,9 +274,6 @@ public:
     }
     in3.close();
     printf("nRead = %d, CVIndex size=%d, mapByUser size=%d\n", nRead, (int)CVIndex.size(), (int)mapByUserIds.size());
-    for(int k=0; k < 10; k++){
-      printf("[debug]CVIndex key=%d, value=%d\n", k, CVIndex[k]);
-    }
   }
 
   ~corpus()
