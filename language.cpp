@@ -781,7 +781,8 @@ int main(int argc, char** argv)
 
   printf("[Stat]Perplexity: %f+/-%f\n", mean,var);
 
-  char const* perpPath = (prefix + "HFT_" + source + "_perplexity_" + std::to_string(K) + ".txt").c_str();
+  char const* perpPath = (prefix + "/output/" + source + "/byUser_20k_review/"
+  std::to_string(crossV) + "_HFT_" + source + "_perplexity_" + std::to_string(K) + ".txt").c_str();
   if(perpPath)
   {
     FILE* f = fopen_(perpPath, "w");
