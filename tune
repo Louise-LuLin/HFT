@@ -2,6 +2,7 @@
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/liblbfgs-1.10/lib/.libs/
 read -p "Enter source, crossV:" source crossV
 echo
+if 
 for k in {5..50..5}
 do
 	nohup ./train -dir /zf18/ll5fy/lab/dataset -source $source -crossV $crossV -K $k -iter 50 > ./output/"$crossV"_"$source"_HFT_"$k".output 2>&1 &

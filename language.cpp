@@ -742,7 +742,7 @@ int main(int argc, char** argv)
     ++i;
   };
 
-  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, 0);
+  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, crossV, 0);
 
   double* result = new double[crossV];
   for(int i = 0; i < crossV; i++)
