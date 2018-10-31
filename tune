@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/liblbfgs-1.10/lib/.libs/
 read -p "Enter source, crossV:" source crossV
 echo
@@ -8,7 +8,3 @@ do
 	nohup ./train -dir /zf18/ll5fy/lab/dataset -source $source -crossV $crossV -K $k -iter 50 > ./output/"$crossV"_"$source"_HFT_"$k".output 2>&1 &
 done
 
-# nohup ./train -dir /zf18/ll5fy/lab/dataset -source YelpNew -crossV 1 -K 5 -iter 50 > ./output/YelpNew_HFT_5.output 2>&1 &
-# nohup ./train -dir /zf18/ll5fy/lab/dataset -source YelpNew -crossV 1 -K 10 -iter 50 > ./output/YelpNew_HFT_10.output 2>&1 &
-# nohup ./train -dir /zf18/ll5fy/lab/dataset -source YelpNew -crossV 1 -K 15 -iter 50 > ./output/YelpNew_HFT_15.output 2>&1 &
-# nohup ./train -dir /zf18/ll5fy/lab/dataset -source YelpNew -crossV 1 -K 20 -iter 50 > ./output/YelpNew_HFT_20.output 2>&1 &
