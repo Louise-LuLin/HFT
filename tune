@@ -1,11 +1,9 @@
 #!/bin/sh
-echo "source: "
-
-echo "crossV: "
+read -p "Enter source, crossV:" source crossV
 
 for k in {5..50..5}
 do
-	echo "$k"
+	nohup ./train -dir /zf18/ll5fy/lab/dataset -source $source -crossV $crossV -K $k -iter 50 > ./output/"$crossV"_"$source"_HFT_"$k".output 2>&1 &
 done
 
 # nohup ./train -dir /zf18/ll5fy/lab/dataset -source YelpNew -crossV 1 -K 5 -iter 50 > ./output/YelpNew_HFT_5.output 2>&1 &
