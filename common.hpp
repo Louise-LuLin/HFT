@@ -68,9 +68,13 @@ class corpus
 public:
   corpus(std::string prefix, std::string source, int crossV, int max)
   {
-    std::string voteFile = prefix + "/HFT/CVlink_data.tsv";
-    if(crossV > 1)
+    std::string voteFile = prefix + "/HFT/data.tsv";
+    if(source=="StackOverflow"){
+      voteFile = prefix + "/HFT/CVlink_data.tsv";
+      if(crossV > 1)
       voteFile = prefix + "/HFT/CVdoc_data.tsv";
+    }
+  
     std::string CVIdxFile = prefix + "/" + source + "CVIndex.txt";
 
     std::map<std::string, int> uCounts;
