@@ -412,30 +412,30 @@ double topicCorpus::collectPerplexity()
     double ltZ = log(tZ);
 
     double cur_loglikelihood = 0;
-    for (int k = 0; k < K; k++)
-    {
-      // p(z|theta_i)
-      cur_loglikelihood += beerTopicCounts[beer][k] * (*kappa * gamma_beer[beer][k] - ltZ);
-      // p(w|z,\beta)
-      double lwZ = log(wZ[k]);
-      for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
-      {
-        int wi = (*it)->words[wp]; // The word
-        cur_loglikelihood += wordTopicCounts[wi][k] * (backgroundWords[wi] + topicWords[wi][k] - lwZ);
-      }
-    }
-    
-    // for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
+    // for (int k = 0; k < K; k++)
     // {
-    //   int wi = (*it)->words[wp]; // The word
-    //   double tmp = 0;
-    //   for (int k = 0; k < K; k++)
+    //   // p(z|theta_i)
+    //   cur_loglikelihood += beerTopicCounts[beer][k] * (*kappa * gamma_beer[beer][k] - ltZ);
+    //   // p(w|z,\beta)
+    //   double lwZ = log(wZ[k]);
+    //   for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
     //   {
-    //     double lwZ = log(wZ[k]);
-    //     tmp += exp(*kappa * gamma_beer[beer][k] - ltZ + backgroundWords[wi] + topicWords[wi][k] - lwZ);
+    //     int wi = (*it)->words[wp]; // The word
+    //     cur_loglikelihood += wordTopicCounts[wi][k] * (backgroundWords[wi] + topicWords[wi][k] - lwZ);
     //   }
-    //   cur_loglikelihood += log(tmp);
     // }
+
+    for (int wp = 0; wp < (int) (*it)->words.size(); wp++)
+    {
+      int wi = (*it)->words[wp]; // The word
+      double tmp = 0;
+      for (int k = 0; k < K; k++)
+      {
+        double lwZ = log(wZ[k]);
+        tmp += exp(beerTopicCounts[beer][k] * ( *kappa * gamma_beer[beer][k] - ltZ) + wordTopicCounts[wi][k] * ( backgroundWords[wi] + topicWords[wi][k] - lwZ));
+      }
+      cur_loglikelihood += log(tmp);
+    }
     wordCount += (int) ((*it)->words).size();
     res += cur_loglikelihood;
     // printf("-- %d item: log-likelihood=%f, wordCount=%d\n", (*it)->item, cur_loglikelihood, (int) ((*it)->words).size());
@@ -705,7 +705,7 @@ int main(int argc, char** argv)
 
   double latentReg = 0;
   double lambda = 0.1;
-  int iter = 50;
+  int iter = 30;
 
   int crossV = 1;
   int K = 5;
