@@ -432,7 +432,7 @@ double topicCorpus::collectPerplexity()
       for (int k = 0; k < K; k++)
       {
         double lwZ = log(wZ[k]);
-        tmp += exp(beerTopicCounts[beer][k] * ( *kappa * gamma_beer[beer][k] - ltZ) + wordTopicCounts[wi][k] * ( backgroundWords[wi] + topicWords[wi][k] - lwZ));
+        tmp += exp(log(beerTopicCounts[beer][k]) * (*kappa * gamma_beer[beer][k] - ltZ) + log(wordTopicCounts[wi][k]) * (backgroundWords[wi] + topicWords[wi][k] - lwZ));
       }
       cur_loglikelihood += log(tmp);
     }
