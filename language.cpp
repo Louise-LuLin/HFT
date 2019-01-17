@@ -432,7 +432,7 @@ double topicCorpus::collectPerplexity()
       for (int k = 0; k < K; k++)
       {
         double lwZ = log(wZ[k]);
-        tmp += beerTopicCounts[beer][k] * exp(*kappa * gamma_beer[beer][k] - ltZ) * wordTopicCounts[wi][k] * exp(backgroundWords[wi] + topicWords[wi][k] - lwZ);
+        tmp += exp(*kappa * gamma_beer[beer][k] - ltZ) * exp(backgroundWords[wi] + topicWords[wi][k] - lwZ);
       }
       cur_loglikelihood += log(tmp);
     }
@@ -721,6 +721,9 @@ int main(int argc, char** argv)
     } else if (strcmp(argv[i], "-source") == 0) {
       source = string(argv[++i]);
       fprintf(stdout, "+ source = %s\n", source.c_str());
+    } else if (strcmp(argv[i], "-mode") == 0) {
+      mode = string(argv[++i]);
+      fprintf(stdout, "+ mode = %s\n", mode.c_str());
     } else if (strcmp(argv[i], "-reg") == 0) {
       latentReg = atof(argv[++i]);
       fprintf(stdout, "+ latentReg = %f\n", latentReg);
@@ -743,7 +746,7 @@ int main(int argc, char** argv)
     ++i;
   };
 
-  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, crossV, 0);
+  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, mode, crossV, 0);
 
   double* result = new double[crossV];
   for(int i = 0; i < crossV; i++)
