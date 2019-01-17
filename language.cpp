@@ -712,6 +712,7 @@ int main(int argc, char** argv)
 
   string prefix="/zf18/ll5fy/lab/dataset";
   string source="YelpNew";
+  string mode="Item";
 
   int i=0;
   while (i <= argc - 1) {
