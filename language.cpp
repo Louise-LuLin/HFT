@@ -753,7 +753,7 @@ int main(int argc, char** argv)
 
   corpus corp(prefix+"/"+source+"/byUser_20k_review", source, cold, mode, crossV, -1, 0);
 
-  const int dim = 1;
+  int dim = 1;
   if (cold=="true")
     dim = 3;
 
@@ -762,7 +762,7 @@ int main(int argc, char** argv)
   for(int i = 0; i < crossV; i++)
   {
     printf("----- fold: %d %s -----\n", i, cold.c_str());
-    result[i]=new int[dim]
+    result[i]=new double[dim];
     for(int j = 0; j < dim; j++)
     {
       corpus corp(prefix+"/"+source+"/byUser_20k_review", source, cold, mode, crossV, i, 0);
