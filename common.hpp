@@ -66,7 +66,7 @@ template<typename T> int sgn(T val)
 class corpus
 {
 public:
-  corpus(std::string prefix, std::string source, std::string userBase, int crossV, int max)
+  corpus(std::string prefix, std::string source, std::string cold, std::string userBase, int crossV, int curV, int max)
   {
     std::string voteFile = prefix + "/HFT/data.tsv";
     if(source=="StackOverflow"){
@@ -76,6 +76,9 @@ public:
     }
   
     std::string CVIdxFile = prefix + "/" + source + "CVIndex.txt";
+    if(cold=="true")
+      CVIdxFile = prefix + "/" + source + "_cold_start_4docs_fold_" + std::to_string(curV) + ".txt";
+
 
     std::map<std::string, int> uCounts;
     std::map<std::string, int> bCounts;

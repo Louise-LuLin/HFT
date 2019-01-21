@@ -5,11 +5,12 @@ class topicCorpus
 public:
   topicCorpus(corpus* corp, // The corpus
               int i, // index of folder
+              std::string cold, //index of testing group
               int crossV, //mode to indicate whether CV
               int K, // The number of latent factors
               double latentReg, // Parameter regularizer used by the "standard" recommender system
               double lambda) : // Word regularizer used by HFT
-    corp(corp), folderIndex(i), crossV(crossV), K(K), latentReg(latentReg), lambda(lambda)
+    corp(corp), folderIndex(i), cold(cold), crossV(crossV), K(K), latentReg(latentReg), lambda(lambda)
   {
     srand(0);
 
@@ -37,7 +38,7 @@ public:
 
     // assign train_test by cross validation folds
     int cvIdx = 0;
-    if(crossV > 1)
+    if(crossV > 1 and cold == "false")
     {
       int i=0;
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
@@ -65,6 +66,34 @@ public:
       }
     }
 
+    if(crossV > 1 and cold == "true")
+    {
+      int i=0;
+      for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
+      {
+        if(corp->CVIndex.find(i) == corp->CVIndex.end())
+          printf("[err]Vote index %d not found...\n", i);
+        else
+          cvIdx = corp->CVIndex[i];
+        if (cvIdx == 3)
+        {
+          trainVotes.push_back(*it);
+          trainVotesPerUser[(*it)->user].push_back(*it);
+          trainVotesPerBeer[(*it)->item].push_back(*it);
+          if (nTrainingPerUser.find((*it)->user) == nTrainingPerUser.end())
+            nTrainingPerUser[(*it)->user] = 0;
+          if (nTrainingPerBeer.find((*it)->item) == nTrainingPerBeer.end())
+            nTrainingPerBeer[(*it)->item] = 0;
+          nTrainingPerUser[(*it)->user] ++;
+          nTrainingPerBeer[(*it)->item] ++;
+        } else if (cvIdx == folderIndex) {
+          validVotes.push_back(*it);
+          testVotes.insert(*it);
+        }
+        i++;
+      }
+    }
+
     if(crossV == 1)
     {
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
@@ -84,8 +113,8 @@ public:
       }
     }
 
-    printf("[Info]train votes = %d, valid votes = %d, testVotes = %d\n", 
-      trainVotes.size(), validVotes.size(), testVotes.size());
+    printf("[Info]group/fold %d: train votes = %d, valid votes = %d, testVotes = %d\n", 
+      folderIndex, trainVotes.size(), validVotes.size(), testVotes.size());
 
     // asign train_test by ratio
     // double trainFraction = 0.8;
@@ -359,6 +388,7 @@ public:
   int NW;
   int K;
   int folderIndex;
+  std::string cold;
   int crossV;
 
   double latentReg;

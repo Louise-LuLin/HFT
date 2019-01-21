@@ -712,7 +712,8 @@ int main(int argc, char** argv)
 
   string prefix="/zf18/ll5fy/lab/dataset";
   string source="YelpNew";
-  string mode="Item";
+  string mode="User";
+  string cold="true";
 
   int i=0;
   while (i <= argc - 1) {
@@ -725,6 +726,9 @@ int main(int argc, char** argv)
     } else if (strcmp(argv[i], "-mode") == 0) {
       mode = string(argv[++i]);
       fprintf(stdout, "+ mode = %s\n", mode.c_str());
+    } else if (strcmp(argv[i], "-cold") == 0) {
+      cold = string(argv[++i]);
+      fprintf(stdout, "+ cold = %s\n", cold.c_str());
     } else if (strcmp(argv[i], "-reg") == 0) {
       latentReg = atof(argv[++i]);
       fprintf(stdout, "+ latentReg = %f\n", latentReg);
@@ -747,47 +751,67 @@ int main(int argc, char** argv)
     ++i;
   };
 
-  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, mode, crossV, 0);
+  corpus corp(prefix+"/"+source+"/byUser_20k_review", source, cold, mode, crossV, -1, 0);
 
-  double* result = new double[crossV];
+  int dim = 1;
+  if (cold=="true")
+    dim = 3;
+
+  double* result = new double[crossV][dim];
+  int indexNo = 0;
   for(int i = 0; i < crossV; i++)
   {
-    printf("----- fold: %d -----\n", i);
-    topicCorpus ec(&corp, i, crossV, K, // K
+    printf("----- fold: %d %s -----\n", i, cold);
+    for(int j = 0; j < dim; j++)
+    {
+      corpus corp(prefix+"/"+source+"/byUser_20k_review", source, cold, mode, crossV, i, 0);
+      if (cold == "true")
+        indexNo = j;
+      else
+        indexNo = i;
+
+      topicCorpus ec(&corp, indexNo, cold, crossV, K, // K
                  latentReg, // latent topic regularizer
                  lambda); // lambda
-    ec.train(iter, 50);
+      ec.train(iter, 50);
 
-    std::string fold="";
-    if(crossV > 1)
-      fold = std::to_string(i) + "/";
-    string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
-    createFolder(folder.c_str());
-    ec.save((folder + "HFT_model_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_prediction_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_userEmbed_" + std::to_string(K) + ".txt").c_str(), 
-             (folder + "HFT_itemEmbed_" + std::to_string(K) + ".txt").c_str());
-    ec.topWords((folder + "HFT_topwords_" + std::to_string(K) + ".txt").c_str());
-    result[i] = ec.collectPerplexity();
-    printf("[Stat]Perplecity=%f\n", result[i]);
+      std::string fold="";
+      if(crossV > 1)
+        fold = std::to_string(i) + "/";
+      string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
+      createFolder(folder.c_str());
+      ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_itemEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str());
+      ec.topWords((folder + "HFT_topwords_" + std::to_string(K) + "_" + cold + ".txt").c_str());
+      result[i][j] = ec.collectPerplexity();
+      printf("[Stat]%d-%d Perplecity=%f\n", i, j, result[i][j]);
+    }
+    
   }
 
   double sum = 0;
   double mean = 0;
   double var = 0;
-  for (int i = 0; i < crossV; i++)
-    sum += result[i];
-  mean = sum / crossV;
+  for (int j = 0; j < dim; j++)
+  {
+    sum=0;
+    for (int i = 0; i < crossV; i++)
+      sum += result[i][j];
+    mean = sum / crossV;
 
-  sum = 0;
-  for (int i = 0; i < crossV; i++)
-    sum += (result[i] - mean) * (result[i] - mean);
-  var = sqrt(sum / crossV);
+    sum = 0;
+    for (int i = 0; i < crossV; i++)
+      sum += (result[i][j] - mean) * (result[i][j] - mean);
+    var = sqrt(sum / crossV);
 
-  printf("[Stat]Perplexity: %f+/-%f\n", mean,var);
+    printf("[Stat]Part %d Perplexity: %f+/-%f\n", j, mean, var);
+
+  }
 
   char const* perpPath = (prefix + "/output/" + source + "/byUser_20k_review/" + 
-    std::to_string(crossV) + "_HFT_" + source + "_perplexity_" + std::to_string(K) + ".txt").c_str();
+    std::to_string(crossV) + "_" + cold + "_HFT_" + source + "_perplexity_" + std::to_string(K) + ".txt").c_str();
   if(perpPath)
   {
     FILE* f = fopen_(perpPath, "w");
