@@ -562,7 +562,8 @@ void topicCorpus::topWords(char const* topwordPath)
 
 /// Save a model and predictions to two files
 void topicCorpus::save(char const* modelPath, char const* predictionPath, 
-                       char const* userEmbedPath, char const* itemEmbedPath)
+                       char const* userEmbedPath, char const* itemEmbedPath,
+                       char const* itemSelectedPath)
 {
   if (modelPath)
   {
@@ -614,13 +615,36 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     fclose(f);
   }
 
+
+  std::map<std::string, std::string> selectedItem;
+  if(itemSelectedPath)
+  {
+    std::fstream in;
+    std::string line;
+    std::string iid;
+    std::string uid;
+    in.open(itemSelectedPath.c_str());
+    while (std::getline(in, line))
+    {
+      std::stringstream ss(line);
+      ss >> uid >> iid;
+      selectedItem[iid] = uid;
+    }
+  }
+
+  printf("[Info] %d selected items to print\n", (int)rV.size());
+
   if(itemEmbedPath)
   {
     FILE* f = fopen_(itemEmbedPath, "w");
 
-    fprintf(f, "%d\t%d\n", nBeers, K);
+    fprintf(f, "%d\t%d\n", (int)rV.size(), K);
     for (int b = 0; b < nBeers; b++)
     {
+      if(selectedItem.find(corp->rBeerIds[b]) == selectedItem.end())
+      {
+        continue;
+      }
       fprintf(f, "%s", corp->rBeerIds[b].c_str());
       for (int k = 0; k < K; k++)
         fprintf(f, "\t%f", gamma_beer[b][k]);
@@ -628,6 +652,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     }
     fclose(f);
   }
+
 }
 
 /// Train a model for "emIterations" with "gradIterations" of gradient descent at each step
@@ -774,17 +799,27 @@ int main(int argc, char** argv)
       topicCorpus ec(&corp, indexNo, cold, crossV, K, // K
                  latentReg, // latent topic regularizer
                  lambda); // lambda
-      ec.train(iter, 50);
+      ec.train(iter, 40);
 
       std::string fold="";
       if(crossV > 1)
         fold = std::to_string(i) + "/";
       string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
       createFolder(folder.c_str());
-      ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+
+      if (source == "StackOverflow2") {
+        ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
                (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
                (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
-               (folder + "HFT_itemEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str());
+               (folder + "HFT_theta_dim_" + std::to_string(K) + "_" + cold + ".txt").c_str(),
+               (prefix + "/"+source+"/byUser_20k_review" + "/" + source + "SelectedQuestions.txt").c_str());
+      } else {
+        ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_theta_dim_" + std::to_string(K) + "_" + cold + ".txt").c_str(),
+               NULL);
+      }
       ec.topWords((folder + "HFT_topwords_" + std::to_string(K) + "_" + cold + ".txt").c_str());
       result[i][j] = ec.collectPerplexity();
       printf("[Stat]%d-%d Perplecity=%f\n", i, j, result[i][j]);

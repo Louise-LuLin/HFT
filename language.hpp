@@ -94,7 +94,36 @@ public:
       }
     }
 
-    if(crossV == 1)
+    //for stackoverflow 2
+    if(crossV == 1 and cold == "false")
+    {
+      int i=0;
+      for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
+      {
+        if(corp->CVIndex.find(i) == corp->CVIndex.end())
+          printf("[err]Vote index %d not found...\n", i);
+        else
+          cvIdx = corp->CVIndex[i];
+        if (cvIdx != folderIndex)
+        {
+          trainVotes.push_back(*it);
+          trainVotesPerUser[(*it)->user].push_back(*it);
+          trainVotesPerBeer[(*it)->item].push_back(*it);
+          if (nTrainingPerUser.find((*it)->user) == nTrainingPerUser.end())
+            nTrainingPerUser[(*it)->user] = 0;
+          if (nTrainingPerBeer.find((*it)->item) == nTrainingPerBeer.end())
+            nTrainingPerBeer[(*it)->item] = 0;
+          nTrainingPerUser[(*it)->user] ++;
+          nTrainingPerBeer[(*it)->item] ++;
+        } else {
+          validVotes.push_back(*it);
+          testVotes.insert(*it);
+        }
+        i++;
+      }
+    }    
+
+    if(crossV == 1 and cold == "true")
     {
       for(std::vector<vote*>::iterator it = corp->V->begin(); it != corp->V->end(); it++)
       {
@@ -323,7 +352,8 @@ public:
   double lsq(void);
   void validTestError(double& train, double& valid, double& rmse_test, double &mae_test, double& testSte);
   void normalizeWordWeights(void);
-  void save(char const* modelPath, char const* predictionPath, char const* userEmbedPath, char const* itemEmbedPath);
+  void save(char const* modelPath, char const* predictionPath, char const* userEmbedPath, char const* itemEmbedPath, 
+    char const* itemSelectedPath);
 
   corpus* corp;
   
