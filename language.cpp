@@ -623,7 +623,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     std::string line;
     std::string iid;
     std::string uid;
-    in.open(itemSelectedPath.c_str());
+    in.open(itemSelectedPath);
     while (std::getline(in, line))
     {
       std::stringstream ss(line);
@@ -632,13 +632,13 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     }
   }
 
-  printf("[Info] %d selected items to print\n", (int)rV.size());
+  printf("[Info] %d selected items to print\n", (int)selectedItem.size());
 
   if(itemEmbedPath)
   {
     FILE* f = fopen_(itemEmbedPath, "w");
 
-    fprintf(f, "%d\t%d\n", (int)rV.size(), K);
+    fprintf(f, "%d\t%d\n", (int)selectedItem.size(), K);
     for (int b = 0; b < nBeers; b++)
     {
       if(selectedItem.find(corp->rBeerIds[b]) == selectedItem.end())
