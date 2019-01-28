@@ -630,6 +630,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
       ss >> uid >> iid;
       selectedItem[iid] = uid;
     }
+    in.close();
   }
 
   printf("[Info] %d selected items to print\n", (int)selectedItem.size());
