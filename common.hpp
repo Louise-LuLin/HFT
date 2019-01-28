@@ -66,10 +66,21 @@ template<typename T> int sgn(T val)
 class corpus
 {
 public:
-  corpus(std::string prefix, std::string source, int max)
+  corpus(std::string prefix, std::string source, std::string cold, std::string userBase, int crossV, int curV, int max)
   {
     std::string voteFile = prefix + "/HFT/data.tsv";
+    if(source=="StackOverflow" or source=="StackOverflow2"){
+      voteFile = prefix + "/HFT/CVlink_data.tsv";
+      if(crossV > 1)
+          voteFile = prefix + "/HFT/CVdoc_data.tsv";
+    }
+  
     std::string CVIdxFile = prefix + "/" + source + "CVIndex.txt";
+    if(cold=="true")
+      CVIdxFile = prefix + "/" + source + "_cold_start_4docs_fold_" + std::to_string(curV) + ".txt";
+    if(source=="StackOverflow2")
+      CVIdxFile = prefix + "/" + source + "CVIndex4Recommendation.txt";
+
 
     std::map<std::string, int> uCounts;
     std::map<std::string, int> bCounts;
@@ -93,7 +104,11 @@ public:
     while (std::getline(in, line))
     {
       std::stringstream ss(line);
-      ss >> uName >> bName >> value >> voteTime >> nw;
+      if (userBase=="Item")
+        ss >> uName >> bName >> value >> voteTime >> nw;
+      else
+        ss >> bName >> uName >> value >> voteTime >> nw;
+
       if (value > 5 or value < 0)
       { // Ratings should be in the range [0,5]
         printf("Got bad value of %f\nOther fields were %s %s %d\n", value, uName.c_str(), bName.c_str(), voteTime);
