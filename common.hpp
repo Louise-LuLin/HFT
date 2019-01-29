@@ -69,11 +69,11 @@ public:
   corpus(std::string prefix, std::string source, std::string cold, std::string userBase, int crossV, int curV, int max)
   {
     std::string voteFile = prefix + "/HFT/data.tsv";
-    // if(source=="StackOverflow" or source=="StackOverflow2"){
-    //   voteFile = prefix + "/HFT/CVlink_data.tsv";
-    //   if(crossV > 1)
-    //       voteFile = prefix + "/HFT/CVdoc_data.tsv";
-    // }
+    if(source=="StackOverflow" or source=="StackOverflow2"){
+      voteFile = prefix + "/HFT/CVlink_data.tsv";
+      if(crossV > 1)
+          voteFile = prefix + "/HFT/CVdoc_data.tsv";
+    }
   
     std::string CVIdxFile = prefix + "/" + source + "CVIndex.txt";
     if(cold=="true")
