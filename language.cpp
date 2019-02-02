@@ -822,18 +822,18 @@ int main(int argc, char** argv)
       string folder = prefix + "/output/" + source + "/byUser_20k_review/" + fold;
       createFolder(folder.c_str());
 
-      if (source == "StackOverflow2") {
-        ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
-               (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
-               (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
-               (folder + "HFT_theta_dim_" + std::to_string(K) + "_" + cold + ".txt").c_str(),
-               (prefix + "/"+source+"/byUser_20k_review" + "/" + source + "SelectedQuestions.txt").c_str());
-      } else {
+      if (source == "StackOverflow") {
         ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
                (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
                (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
                (folder + "HFT_theta_dim_" + std::to_string(K) + "_" + cold + ".txt").c_str(),
                NULL);
+      } else {
+        ec.save((folder + "HFT_model_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_prediction_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_userEmbed_" + std::to_string(K) + "_" + cold + ".txt").c_str(), 
+               (folder + "HFT_theta_dim_" + std::to_string(K) + "_" + cold + ".txt").c_str(),
+               (prefix + "/"+source+"/byUser_20k_review" + "/" + source + "SelectedQuestions.txt").c_str());
       }
       ec.topWords((folder + "HFT_topwords_" + std::to_string(K) + "_" + cold + ".txt").c_str());
       result[i][j] = ec.collectPerplexity();
