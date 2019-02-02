@@ -622,7 +622,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     std::fstream in;
     std::string line;
     std::string iid;
-    int idx;
+    std::string idx;
     std::string uid;
     in.open(itemSelectedPath);
     while (std::getline(in, line))
@@ -633,7 +633,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
       // selectedItem[iid] = uid;
 
       ss >> uid >> idx;
-      selectedItem[std::to_string(uid) + "#" + std::to_string(idx)] = corp->mapByUserIds[uid][idx];
+      selectedItem[uid + "#" + idx] = corp->mapByUserIds[uid][std::stoi(idx)];
     }
     in.close();
   }
