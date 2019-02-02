@@ -633,7 +633,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
       // selectedItem[iid] = uid;
 
       ss >> uid >> idx;
-      selectedItem[corp->mapByUserIds[uid][idx]] = uid;
+      selectedItem[std::to_string(user_idx) + "#" + std::to_string(idx)] = corp->mapByUserIds[uid][idx];
     }
     in.close();
   }
@@ -645,17 +645,25 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     FILE* f = fopen_(itemEmbedPath, "w");
 
     fprintf(f, "%d\t%d\n", (int)selectedItem.size(), K);
-    for (int b = 0; b < nBeers; b++)
-    {
-      if(selectedItem.find(corp->rBeerIds[b]) == selectedItem.end())
-      {
-        continue;
-      }
-      corp->
-      fprintf(f, "%s", corp->rBeerIds[b].c_str());
+    // for (int b = 0; b < nBeers; b++)
+    // {
+    //   if(selectedItem.find(corp->rBeerIds[b]) == selectedItem.end())
+    //   {
+    //     continue;
+    //   }
+    //   fprintf(f, "%s", corp->rBeerIds[b].c_str());
+    //   for (int k = 0; k < K; k++)
+    //     fprintf(f, "\t%f", gamma_beer[b][k]);
+    //   fprintf(f, "\n");
+    // }
+    std::map<std::string, std::string>::iterator iter;
+    iter = selectedItem.begin();
+    while (iter != selectedItem.end()) {
+      fprintf(f, "%s", iter->first.c_str());
       for (int k = 0; k < K; k++)
-        fprintf(f, "\t%f", gamma_beer[b][k]);
+        fprintf(f, "\t%f", gamma_beer[corp->beerIDs[iter->second]][k]);
       fprintf(f, "\n");
+      iter++;
     }
     fclose(f);
   }
