@@ -4,5 +4,5 @@ read -p "Enter source, mode, crossV, cold, minTopic, maxTopic:" source mode cros
 echo 
 for (( k = $min; k <= $max; k = k + 10 ))
 do
-    ./train -dir /zf18/ll5fy/lab/dataset -source $source -mode $mode -crossV $crossV -cold $cold -K $k -iter 50 > ./output/"$crossV"_"$cold"_"$source"_HFT_"$mode"_"$k".output
+    ./train -dir /zf18/ll5fy/lab/dataset -source $source -mode $mode -crossV $crossV -cold $cold -K $k -iter 20 > ./output/"$crossV"_"$cold"_"$source"_HFT_"$mode"_"$k".output
 done
