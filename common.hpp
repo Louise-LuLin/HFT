@@ -227,7 +227,7 @@ public:
 
       // add by Lu
       mapByUserIds[uName].push_back(bName);
-      rV[std::to_string(user_idx) + "_" + std::to_string(mapByUserIds[uName].size()-1)] = V->size();
+      rV[std::to_string(user_idx) + "#" + std::to_string(mapByUserIds[uName].size()-1)] = V->size();
 
       v->value = value;
       v->voteTime = voteTime;
@@ -272,7 +272,7 @@ public:
       else
         user_idx = userIds[uName];
 
-      std::string voteKey = std::to_string(user_idx) + "_" + std::to_string(cur_Id);
+      std::string voteKey = std::to_string(user_idx) + "#" + std::to_string(cur_Id);
       if(rV.find(voteKey) == rV.end()){
         printf("[err]User-id pair %s(%s, %d) not exist\n", voteKey.c_str(), uName.c_str(), cur_Id);
         // assert(rV.find(voteKey) != rV.end());
@@ -309,7 +309,7 @@ public:
   std::map<std::string, int> beerIds; // Maps an item's string-valued ID to an integer
 
   std::map<std::string, std::vector<std::string>> mapByUserIds; // map a user's string ID to a list of item's string ID (userID->{itemID})
-  std::map<int, int> CVIndex; // map vote index to a CV index (uIdx_iIdx -> CVIndex)
+  std::map<int, int> CVIndex; // map vote index to a CV index (uIdx#iIdx -> CVIndex)
 
   std::map<int, std::string> rUserIds; // Inverse of the above map
   std::map<int, std::string> rBeerIds;

@@ -622,13 +622,18 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     std::fstream in;
     std::string line;
     std::string iid;
+    int idx;
     std::string uid;
     in.open(itemSelectedPath);
     while (std::getline(in, line))
     {
       std::stringstream ss(line);
-      ss >> uid >> iid;
-      selectedItem[iid] = uid;
+
+      // ss >> uid >> iid;
+      // selectedItem[iid] = uid;
+
+      ss >> uid >> idx;
+      selectedItem[corp->mapByUserIds[uid][idx]] = uid;
     }
     in.close();
   }
@@ -646,6 +651,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
       {
         continue;
       }
+      corp->
       fprintf(f, "%s", corp->rBeerIds[b].c_str());
       for (int k = 0; k < K; k++)
         fprintf(f, "\t%f", gamma_beer[b][k]);
