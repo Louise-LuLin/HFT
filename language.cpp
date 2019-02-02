@@ -633,7 +633,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
       // selectedItem[iid] = uid;
 
       ss >> uid >> idx;
-      selectedItem[std::to_string(user_idx) + "#" + std::to_string(idx)] = corp->mapByUserIds[uid][idx];
+      selectedItem[std::to_string(uid) + "#" + std::to_string(idx)] = corp->mapByUserIds[uid][idx];
     }
     in.close();
   }
@@ -661,7 +661,7 @@ void topicCorpus::save(char const* modelPath, char const* predictionPath,
     while (iter != selectedItem.end()) {
       fprintf(f, "%s", iter->first.c_str());
       for (int k = 0; k < K; k++)
-        fprintf(f, "\t%f", gamma_beer[corp->beerIDs[iter->second]][k]);
+        fprintf(f, "\t%f", gamma_beer[corp->beerIds[iter->second]][k]);
       fprintf(f, "\n");
       iter++;
     }
